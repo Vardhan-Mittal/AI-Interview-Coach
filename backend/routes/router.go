@@ -29,7 +29,7 @@ func SetupRouter(
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"service": "AI Interview Coach",
-			"version": "1.3.0 (groq auto-fallback engine)",
+			"version": "1.4.0 (groq tpm-shield engine)",
 		})
 	})
 
