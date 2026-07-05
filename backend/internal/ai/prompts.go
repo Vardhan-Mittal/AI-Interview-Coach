@@ -112,7 +112,7 @@ Rules for Interview Weightage:
 
 // buildQuestionGenerationPrompt creates the prompt for generating personalized interview questions.
 func buildQuestionGenerationPrompt(resumeJSON, analysisJSON, difficulty string) string {
-	return fmt.Sprintf(`Generate 25 personalized interview questions based on this candidate's resume and analysis.
+	return fmt.Sprintf(`Generate 15 personalized interview questions based on this candidate's resume and analysis.
 
 Resume:
 %s
@@ -137,7 +137,7 @@ Return a JSON object with exactly this structure:
 
 Question Distribution Rules:
 - Follow the interview_weightage from the analysis to distribute questions across topics
-- Include at least 15 MCQs, 5 open-ended questions, and 5 project/resume-specific questions
+- Include exactly 10 MCQs, 3 open-ended questions, and 2 project/resume-specific questions
 - MCQs MUST have exactly 4 options with only ONE correct answer
 - For "project" type questions, reference SPECIFIC projects from the resume by name
 - For "coding" type, provide a problem description (no code template needed)

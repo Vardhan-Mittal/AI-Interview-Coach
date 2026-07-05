@@ -29,7 +29,7 @@ func SetupRouter(
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"service": "AI Interview Coach",
-			"version": "2.2.0 (gemini 8k-token json-shield engine)",
+			"version": "2.3.0 (gemini turbo-15q engine)",
 		})
 	})
 
