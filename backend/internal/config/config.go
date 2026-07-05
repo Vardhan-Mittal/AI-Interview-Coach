@@ -30,23 +30,12 @@ func Load() *Config {
 	model := getEnv("OPENAI_MODEL", getEnv("AI_MODEL", ""))
 	baseURL := getEnv("OPENAI_BASE_URL", getEnv("AI_BASE_URL", ""))
 
-	// Intelligent auto-detection for free providers (Groq / Gemini)
+	// Default to Google Gemini API
 	if baseURL == "" {
-		if os.Getenv("GROQ_API_KEY") != "" || strings.HasPrefix(apiKey, "gsk_") || strings.Contains(strings.ToLower(model), "llama") || strings.Contains(strings.ToLower(model), "mixtral") {
-			baseURL = "https://api.groq.com/openai/v1"
-			if model == "" || strings.HasPrefix(model, "gpt") || model == "llama-3.3-70b-versatile" {
-				model = "llama-3.1-8b-instant"
-			}
-		} else if os.Getenv("GEMINI_API_KEY") != "" || strings.HasPrefix(apiKey, "AIza") || strings.HasPrefix(apiKey, "AQ.") || strings.Contains(strings.ToLower(model), "gemini") {
-			baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-			if model == "" || strings.HasPrefix(model, "gpt") || model == "gemini-1.5-flash" {
-				model = "gemini-2.0-flash"
-			}
-		}
+		baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 	}
-
-	if model == "" {
-		model = "gpt-4o-mini"
+	if model == "" || strings.HasPrefix(model, "gpt") || model == "gemini-1.5-flash" || strings.Contains(strings.ToLower(model), "llama") {
+		model = "gemini-2.0-flash"
 	}
 
 	cfg := &Config{

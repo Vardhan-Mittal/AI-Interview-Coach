@@ -29,7 +29,7 @@ func SetupRouter(
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"service": "AI Interview Coach",
-			"version": "1.7.0 (groq active-llama4 engine)",
+			"version": "2.0.0 (gemini-dedicated clean engine)",
 		})
 	})
 

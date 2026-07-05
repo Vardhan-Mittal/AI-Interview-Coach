@@ -25,9 +25,6 @@ func (t *geminiKeyTransport) RoundTrip(req *http.Request) (*http.Response, error
 		q.Set("key", t.apiKey)
 		req.URL.RawQuery = q.Encode()
 	}
-	if strings.HasPrefix(t.apiKey, "AQ.") || strings.HasPrefix(t.apiKey, "AIza") {
-		req.Header.Del("Authorization")
-	}
 	return t.base.RoundTrip(req)
 }
 
@@ -254,14 +251,8 @@ func (c *Client) MatchJob(ctx context.Context, req *models.JobMatchRequest) (*mo
 // chatCompletion makes a chat completion request to OpenAI with JSON mode.
 func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt string) (string, error) {
 	modelsToTry := []string{c.model}
-	if strings.Contains(strings.ToLower(c.model), "llama") || strings.Contains(strings.ToLower(c.model), "mixtral") || strings.Contains(strings.ToLower(c.model), "gemma") || strings.Contains(strings.ToLower(c.model), "versatile") || strings.Contains(strings.ToLower(c.model), "instant") {
-		for _, fallback := range []string{"llama-3.3-70b-versatile", "llama-3.1-8b-instant", "meta-llama/llama-4-scout-17b-16e-instruct", "qwen/qwen3-32b"} {
-			if fallback != c.model {
-				modelsToTry = append(modelsToTry, fallback)
-			}
-		}
-	} else if strings.Contains(strings.ToLower(c.model), "gemini") {
-		for _, fallback := range []string{"gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b"} {
+	if strings.Contains(strings.ToLower(c.model), "gemini") {
+		for _, fallback := range []string{"gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b", "gemini-1.5-pro"} {
 			if fallback != c.model {
 				modelsToTry = append(modelsToTry, fallback)
 			}
