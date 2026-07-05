@@ -227,7 +227,7 @@ func (c *Client) MatchJob(ctx context.Context, req *models.JobMatchRequest) (*mo
 func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt string) (string, error) {
 	modelsToTry := []string{c.model}
 	if strings.Contains(strings.ToLower(c.model), "llama") || strings.Contains(strings.ToLower(c.model), "mixtral") || strings.Contains(strings.ToLower(c.model), "gemma") || strings.Contains(strings.ToLower(c.model), "versatile") || strings.Contains(strings.ToLower(c.model), "instant") {
-		for _, fallback := range []string{"llama-3.1-8b-instant", "gemma2-9b-it", "gemma-7b-it", "llama-3.3-70b-versatile"} {
+		for _, fallback := range []string{"llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it", "gemma-7b-it"} {
 			if fallback != c.model {
 				modelsToTry = append(modelsToTry, fallback)
 			}
