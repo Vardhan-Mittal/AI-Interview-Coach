@@ -252,7 +252,7 @@ func (c *Client) MatchJob(ctx context.Context, req *models.JobMatchRequest) (*mo
 func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt string) (string, error) {
 	modelsToTry := []string{c.model}
 	if strings.Contains(strings.ToLower(c.model), "gemini") {
-		for _, fallback := range []string{"gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b", "gemini-1.5-pro"} {
+		for _, fallback := range []string{"gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash", "gemini-3.1-flash-lite"} {
 			if fallback != c.model {
 				modelsToTry = append(modelsToTry, fallback)
 			}

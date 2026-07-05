@@ -34,8 +34,8 @@ func Load() *Config {
 	if baseURL == "" {
 		baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 	}
-	if model == "" || strings.HasPrefix(model, "gpt") || model == "gemini-1.5-flash" || strings.Contains(strings.ToLower(model), "llama") {
-		model = "gemini-2.0-flash"
+	if model == "" || strings.HasPrefix(model, "gpt") || strings.Contains(strings.ToLower(model), "gemini") || strings.Contains(strings.ToLower(model), "llama") {
+		model = "gemini-2.5-flash"
 	}
 
 	cfg := &Config{
