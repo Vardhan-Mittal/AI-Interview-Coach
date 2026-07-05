@@ -1,0 +1,32 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Go
+backend/tmp/
+backend/uploads/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
