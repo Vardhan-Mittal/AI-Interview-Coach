@@ -29,8 +29,8 @@ func main() {
 	cfg := config.Load()
 
 	// Initialize AI client
-	aiClient := ai.NewClient(cfg.OpenAIKey, cfg.OpenAIModel)
-	slog.Info("AI client initialized", "model", cfg.OpenAIModel)
+	aiClient := ai.NewClient(cfg.OpenAIKey, cfg.OpenAIModel, cfg.OpenAIBaseURL)
+	slog.Info("AI client initialized", "model", cfg.OpenAIModel, "baseURL", cfg.OpenAIBaseURL)
 
 	// Initialize database (PostgreSQL / SQLite)
 	gormDB, err := db.Init(cfg)

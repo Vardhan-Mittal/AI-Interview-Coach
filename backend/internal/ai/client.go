@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/ai-interview-coach/backend/internal/models"
 	openai "github.com/sashabaranov/go-openai"
@@ -17,12 +18,16 @@ type Client struct {
 	logger *slog.Logger
 }
 
-// NewClient creates a new AI client with the given API key and model.
-func NewClient(apiKey, model string) *Client {
+// NewClient creates a new AI client with the given API key, model, and optional base URL (for Groq, Gemini, OpenRouter, etc.).
+func NewClient(apiKey, model, baseURL string) *Client {
+	cfg := openai.DefaultConfig(apiKey)
+	if baseURL != "" {
+		cfg.BaseURL = baseURL
+	}
 	return &Client{
-		client: openai.NewClient(apiKey),
+		client: openai.NewClientWithConfig(cfg),
 		model:  model,
-		logger: slog.Default().With("component", "ai"),
+		logger: slog.Default().With("component", "ai", "baseURL", baseURL),
 	}
 }
 
@@ -240,7 +245,15 @@ func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt st
 		return "", fmt.Errorf("no response choices returned from AI")
 	}
 
-	return resp.Choices[0].Message.Content, nil
+	content := strings.TrimSpace(resp.Choices[0].Message.Content)
+	if strings.HasPrefix(content, "```json") {
+		content = strings.TrimPrefix(content, "```json")
+		content = strings.TrimSuffix(content, "```")
+	} else if strings.HasPrefix(content, "```") {
+		content = strings.TrimPrefix(content, "```")
+		content = strings.TrimSuffix(content, "```")
+	}
+	return strings.TrimSpace(content), nil
 }
 
 // calculateRating returns a human-readable rating based on the overall score.

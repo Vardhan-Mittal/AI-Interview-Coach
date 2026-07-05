@@ -3,17 +3,19 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 // Config holds all application configuration.
 type Config struct {
-	Port        string
-	CORSOrigin  string
-	OpenAIKey   string
-	OpenAIModel string
-	DatabaseURL string
+	Port          string
+	CORSOrigin    string
+	OpenAIKey     string
+	OpenAIModel   string
+	OpenAIBaseURL string
+	DatabaseURL   string
 }
 
 // Load reads configuration from environment variables.
@@ -24,16 +26,42 @@ func Load() *Config {
 		log.Println("No .env file found, using system environment variables")
 	}
 
+	apiKey := getEnv("OPENAI_API_KEY", getEnv("GROQ_API_KEY", getEnv("GEMINI_API_KEY", "")))
+	model := getEnv("OPENAI_MODEL", getEnv("AI_MODEL", ""))
+	baseURL := getEnv("OPENAI_BASE_URL", getEnv("AI_BASE_URL", ""))
+
+	// Intelligent auto-detection for free providers (Groq / Gemini)
+	if baseURL == "" {
+		if os.Getenv("GROQ_API_KEY") != "" || strings.Contains(strings.ToLower(model), "llama") || strings.Contains(strings.ToLower(model), "mixtral") {
+			baseURL = "https://api.groq.com/openai/v1"
+			if model == "" {
+				model = "llama-3.3-70b-versatile"
+			}
+		} else if os.Getenv("GEMINI_API_KEY") != "" || strings.Contains(strings.ToLower(model), "gemini") {
+			baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+			if model == "" {
+				model = "gemini-1.5-flash"
+			}
+		}
+	}
+
+	if model == "" {
+		model = "gpt-4o-mini"
+	}
+
 	cfg := &Config{
-		Port:        getEnv("PORT", "8080"),
-		CORSOrigin:  getEnv("CORS_ORIGIN", "http://localhost:3000"),
-		OpenAIKey:   getEnv("OPENAI_API_KEY", ""),
-		OpenAIModel: getEnv("OPENAI_MODEL", "gpt-4o-mini"),
-		DatabaseURL: getEnv("DATABASE_URL", "file:interview_coach.db"),
+		Port:          getEnv("PORT", "8080"),
+		CORSOrigin:    getEnv("CORS_ORIGIN", "http://localhost:3000"),
+		OpenAIKey:     apiKey,
+		OpenAIModel:   model,
+		OpenAIBaseURL: baseURL,
+		DatabaseURL:   getEnv("DATABASE_URL", "file:interview_coach.db"),
 	}
 
 	if cfg.OpenAIKey == "" {
-		log.Println("WARNING: OPENAI_API_KEY is not set. AI features will not work.")
+		log.Println("WARNING: No AI API key found (OPENAI_API_KEY, GROQ_API_KEY, or GEMINI_API_KEY). AI features will not work.")
+	} else if cfg.OpenAIBaseURL != "" {
+		log.Printf("Using AI provider with Base URL: %s, Model: %s\n", cfg.OpenAIBaseURL, cfg.OpenAIModel)
 	}
 
 	return cfg
