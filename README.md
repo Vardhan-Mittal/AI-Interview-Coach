@@ -1,6 +1,6 @@
 # 🎯 AI Interview Coach
 
-[![Live Demo on Vercel](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://resumenichod.vercel.app) [![Backend API Health](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://resumenichod.onrender.com/api/health) [![Powered by Gemini](https://img.shields.io/badge/Powered%20By-Google%20Gemini%202.5-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
+[![Live Demo on Vercel](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://resumenichod.vercel.app) [![Backend API Health](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://resumenichod.onrender.com/api/health) [![Powered by Gemini](https://img.shields.io/badge/Powered%20By-Google%20Gemini%202.5-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/) [![License: MIT](https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge&logo=opensourceinitiative&logoColor=black)](LICENSE)
 
 > Upload Resume → AI analyzes it → Generates personalized interview → Conducts adaptive interview → Scores performance → Gives improvement roadmap
 
@@ -101,4 +101,4 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 📜 License
 
-MIT
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
