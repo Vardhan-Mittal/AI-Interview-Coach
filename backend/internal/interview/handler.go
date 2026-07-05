@@ -1,6 +1,7 @@
 package interview
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -46,7 +47,7 @@ func (h *Handler) Start(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("Failed to start interview", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to generate interview questions. Please try again.",
+			"error": fmt.Sprintf("Failed to generate interview questions: %v", err),
 		})
 		return
 	}
@@ -85,7 +86,7 @@ func (h *Handler) SubmitAnswer(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("Failed to evaluate answer", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to evaluate answer. Please try again.",
+			"error": fmt.Sprintf("Failed to evaluate answer: %v", err),
 		})
 		return
 	}

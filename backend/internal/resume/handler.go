@@ -84,7 +84,7 @@ func (h *Handler) Upload(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("AI resume parsing failed", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to parse resume with AI. Please try again.",
+			"error": fmt.Sprintf("Failed to parse resume with AI: %v", err),
 		})
 		return
 	}
@@ -120,7 +120,7 @@ func (h *Handler) Analyze(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("Resume analysis failed", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to analyze resume. Please try again.",
+			"error": fmt.Sprintf("Failed to analyze resume: %v", err),
 		})
 		return
 	}
@@ -154,7 +154,7 @@ func (h *Handler) Roast(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("Resume roast failed", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to roast resume. Please try again.",
+			"error": fmt.Sprintf("Failed to roast resume: %v", err),
 		})
 		return
 	}

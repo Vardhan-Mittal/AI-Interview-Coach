@@ -1,6 +1,7 @@
 package job
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -46,7 +47,7 @@ func (h *Handler) Match(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("Job match failed", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to analyze job match. Please try again.",
+			"error": fmt.Sprintf("Failed to analyze job match: %v", err),
 		})
 		return
 	}

@@ -1,6 +1,7 @@
 package report
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -38,7 +39,7 @@ func (h *Handler) GetReport(c *gin.Context) {
 	if err != nil {
 		h.logger.Error("Failed to generate report", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to generate interview report. Please try again.",
+			"error": fmt.Sprintf("Failed to generate interview report: %v", err),
 		})
 		return
 	}
