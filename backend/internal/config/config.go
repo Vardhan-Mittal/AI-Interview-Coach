@@ -37,7 +37,7 @@ func Load() *Config {
 			if model == "" || strings.HasPrefix(model, "gpt") {
 				model = "llama-3.3-70b-versatile"
 			}
-		} else if os.Getenv("GEMINI_API_KEY") != "" || strings.HasPrefix(apiKey, "AIza") || strings.Contains(strings.ToLower(model), "gemini") {
+		} else if os.Getenv("GEMINI_API_KEY") != "" || strings.HasPrefix(apiKey, "AIza") || strings.HasPrefix(apiKey, "AQ.") || strings.Contains(strings.ToLower(model), "gemini") {
 			baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 			if model == "" || strings.HasPrefix(model, "gpt") {
 				model = "gemini-1.5-flash"
