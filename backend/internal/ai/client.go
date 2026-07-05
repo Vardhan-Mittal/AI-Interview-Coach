@@ -282,16 +282,11 @@ func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt st
 			break
 		}
 		errStr := strings.ToLower(err.Error())
+		c.logger.Warn("AI model encountered error or high demand, automatically trying next backup model...", "failed_model", modelName, "error", err)
 		if strings.Contains(errStr, "413") || strings.Contains(errStr, "too large") || strings.Contains(errStr, "tpm") || strings.Contains(errStr, "tokens per minute") {
-			c.logger.Warn("AI model hit TPM limit or request too large, reducing max tokens and trying next model...", "failed_model", modelName, "error", err)
 			maxTokens = 4096
-			continue
 		}
-		if strings.Contains(errStr, "429") || strings.Contains(errStr, "rate limit") || strings.Contains(errStr, "quota") || strings.Contains(errStr, "exceeded") || strings.Contains(errStr, "too many requests") {
-			c.logger.Warn("AI model hit rate limit, trying next backup model...", "failed_model", modelName, "error", err)
-			continue
-		}
-		break
+		continue
 	}
 	if err != nil {
 		return "", err
