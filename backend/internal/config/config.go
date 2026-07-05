@@ -39,8 +39,8 @@ func Load() *Config {
 			}
 		} else if os.Getenv("GEMINI_API_KEY") != "" || strings.HasPrefix(apiKey, "AIza") || strings.HasPrefix(apiKey, "AQ.") || strings.Contains(strings.ToLower(model), "gemini") {
 			baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-			if model == "" || strings.HasPrefix(model, "gpt") {
-				model = "gemini-1.5-flash"
+			if model == "" || strings.HasPrefix(model, "gpt") || model == "gemini-1.5-flash" {
+				model = "gemini-2.0-flash"
 			}
 		}
 	}
