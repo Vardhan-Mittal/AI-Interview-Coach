@@ -5,11 +5,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"strings"
 
 	"github.com/ai-interview-coach/backend/internal/models"
 	openai "github.com/sashabaranov/go-openai"
 )
+
+type geminiKeyTransport struct {
+	apiKey string
+	base   http.RoundTripper
+}
+
+func (t *geminiKeyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("x-goog-api-key", t.apiKey)
+	req.Header.Set("api-key", t.apiKey)
+	q := req.URL.Query()
+	if q.Get("key") == "" {
+		q.Set("key", t.apiKey)
+		req.URL.RawQuery = q.Encode()
+	}
+	if strings.HasPrefix(t.apiKey, "AQ.") || strings.HasPrefix(t.apiKey, "AIza") {
+		req.Header.Del("Authorization")
+	}
+	return t.base.RoundTrip(req)
+}
 
 // Client wraps the OpenAI API client with application-specific methods.
 type Client struct {
@@ -23,6 +43,14 @@ func NewClient(apiKey, model, baseURL string) *Client {
 	cfg := openai.DefaultConfig(apiKey)
 	if baseURL != "" {
 		cfg.BaseURL = baseURL
+	}
+	if strings.Contains(baseURL, "googleapis.com") || strings.HasPrefix(apiKey, "AQ.") || strings.HasPrefix(apiKey, "AIza") {
+		cfg.HTTPClient = &http.Client{
+			Transport: &geminiKeyTransport{
+				apiKey: apiKey,
+				base:   http.DefaultTransport,
+			},
+		}
 	}
 	return &Client{
 		client: openai.NewClientWithConfig(cfg),
