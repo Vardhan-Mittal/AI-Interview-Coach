@@ -2,18 +2,19 @@ package models
 
 // ParsedResume holds the structured data extracted from a resume PDF.
 type ParsedResume struct {
-	Name         string       `json:"name"`
-	Email        string       `json:"email"`
-	Phone        string       `json:"phone"`
-	LinkedIn     string       `json:"linkedin,omitempty"`
-	GitHub       string       `json:"github,omitempty"`
-	Summary      string       `json:"summary"`
-	Skills       []string     `json:"skills"`
-	Projects     []Project    `json:"projects"`
-	Experience   []Experience `json:"experience"`
-	Education    []Education  `json:"education"`
-	Achievements []string     `json:"achievements"`
-	Certifications []string   `json:"certifications,omitempty"`
+	Name           string       `json:"name"`
+	Email          string       `json:"email"`
+	Phone          string       `json:"phone"`
+	LinkedIn       string       `json:"linkedin,omitempty"`
+	GitHub         string       `json:"github,omitempty"`
+	Summary        string       `json:"summary"`
+	RawText        string       `json:"raw_text,omitempty"`
+	Skills         []string     `json:"skills"`
+	Projects       []Project    `json:"projects"`
+	Experience     []Experience `json:"experience"`
+	Education      []Education  `json:"education"`
+	Achievements   []string     `json:"achievements"`
+	Certifications []string     `json:"certifications,omitempty"`
 }
 
 // Project represents a project listed on the resume.

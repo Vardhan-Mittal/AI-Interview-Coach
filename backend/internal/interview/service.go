@@ -8,19 +8,22 @@ import (
 	"github.com/ai-interview-coach/backend/internal/ai"
 	"github.com/ai-interview-coach/backend/internal/models"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // Service manages interview sessions with adaptive difficulty.
 type Service struct {
 	aiClient *ai.Client
+	db       *gorm.DB
 	sessions map[string]*models.InterviewSession
 	mu       sync.RWMutex
 }
 
 // NewService creates a new interview service.
-func NewService(aiClient *ai.Client) *Service {
+func NewService(aiClient *ai.Client, db *gorm.DB) *Service {
 	return &Service{
 		aiClient: aiClient,
+		db:       db,
 		sessions: make(map[string]*models.InterviewSession),
 	}
 }
@@ -52,6 +55,18 @@ func (s *Service) StartInterview(ctx context.Context, resume models.ParsedResume
 	s.mu.Lock()
 	s.sessions[sessionID] = session
 	s.mu.Unlock()
+
+	if s.db != nil {
+		entity := models.InterviewSessionEntity{
+			ID:         sessionID,
+			Difficulty: "medium",
+			Status:     "in_progress",
+			Questions:  questions,
+			Answers:    session.Answers,
+			CurrentIdx: 0,
+		}
+		s.db.Save(&entity)
+	}
 
 	return &models.InterviewStartResponse{
 		SessionID:      sessionID,
@@ -94,6 +109,22 @@ func (s *Service) SubmitAnswer(ctx context.Context, req models.AnswerSubmitReque
 	session.CurrentIndex++
 	s.mu.Unlock()
 
+	if s.db != nil {
+		status := "in_progress"
+		if session.CurrentIndex >= len(session.Questions) {
+			status = "completed"
+		}
+		entity := models.InterviewSessionEntity{
+			ID:         session.ID,
+			Difficulty: session.DifficultyLevel,
+			Status:     status,
+			Questions:  session.Questions,
+			Answers:    session.Answers,
+			CurrentIdx: session.CurrentIndex,
+		}
+		s.db.Save(&entity)
+	}
+
 	// Build response
 	response := &models.AnswerSubmitResponse{
 		Evaluation:        *evaluation,
@@ -115,9 +146,26 @@ func (s *Service) SubmitAnswer(ctx context.Context, req models.AnswerSubmitReque
 // GetSession returns a session by ID.
 func (s *Service) GetSession(sessionID string) (*models.InterviewSession, error) {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	session, exists := s.sessions[sessionID]
+	s.mu.RUnlock()
+
+	if !exists && s.db != nil {
+		var entity models.InterviewSessionEntity
+		if err := s.db.First(&entity, "id = ?", sessionID).Error; err == nil {
+			session = &models.InterviewSession{
+				ID:              entity.ID,
+				Questions:       entity.Questions,
+				Answers:         entity.Answers,
+				CurrentIndex:    entity.CurrentIdx,
+				DifficultyLevel: entity.Difficulty,
+			}
+			s.mu.Lock()
+			s.sessions[sessionID] = session
+			s.mu.Unlock()
+			exists = true
+		}
+	}
+
 	if !exists {
 		return nil, fmt.Errorf("session not found: %s", sessionID)
 	}

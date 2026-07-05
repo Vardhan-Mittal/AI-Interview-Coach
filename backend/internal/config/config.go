@@ -29,7 +29,7 @@ func Load() *Config {
 		CORSOrigin:  getEnv("CORS_ORIGIN", "http://localhost:3000"),
 		OpenAIKey:   getEnv("OPENAI_API_KEY", ""),
 		OpenAIModel: getEnv("OPENAI_MODEL", "gpt-4o-mini"),
-		DatabaseURL: getEnv("DATABASE_URL", ""),
+		DatabaseURL: getEnv("DATABASE_URL", "file:interview_coach.db"),
 	}
 
 	if cfg.OpenAIKey == "" {

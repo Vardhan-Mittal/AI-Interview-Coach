@@ -8,6 +8,7 @@ import (
 
 	"github.com/ai-interview-coach/backend/internal/ai"
 	"github.com/ai-interview-coach/backend/internal/config"
+	"github.com/ai-interview-coach/backend/internal/db"
 	"github.com/ai-interview-coach/backend/internal/interview"
 	"github.com/ai-interview-coach/backend/internal/job"
 	"github.com/ai-interview-coach/backend/internal/report"
@@ -31,10 +32,16 @@ func main() {
 	aiClient := ai.NewClient(cfg.OpenAIKey, cfg.OpenAIModel)
 	slog.Info("AI client initialized", "model", cfg.OpenAIModel)
 
+	// Initialize database (PostgreSQL / SQLite)
+	gormDB, err := db.Init(cfg)
+	if err != nil {
+		slog.Error("Database initialization failed, continuing with in-memory fallback", "error", err)
+	}
+
 	// Initialize services
-	resumeService := resume.NewService(aiClient)
-	interviewService := interview.NewService(aiClient)
-	reportService := report.NewService(aiClient, interviewService)
+	resumeService := resume.NewService(aiClient, gormDB)
+	interviewService := interview.NewService(aiClient, gormDB)
+	reportService := report.NewService(aiClient, interviewService, gormDB)
 	jobService := job.NewService(aiClient)
 
 	// Initialize handlers
