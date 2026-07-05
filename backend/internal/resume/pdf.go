@@ -5,63 +5,44 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pdfcpu/pdfcpu/pkg/api"
-	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
+	"github.com/ledongthuc/pdf"
 )
 
 // ExtractTextFromPDF reads PDF bytes and returns the extracted text.
 func ExtractTextFromPDF(fileData []byte) (string, error) {
-	reader := bytes.NewReader(fileData)
-
-	// Use pdfcpu to extract text content
-	ctx, err := api.ReadContext(reader, model.NewDefaultConfiguration())
+	reader, err := pdf.NewReader(bytes.NewReader(fileData), int64(len(fileData)))
 	if err != nil {
-		// If pdfcpu can't read the PDF, try the raw text fallback
 		return extractFallback(fileData)
 	}
 
-	if ctx.PageCount == 0 {
-		return "", fmt.Errorf("PDF has no pages")
+	numPages := reader.NumPage()
+	if numPages == 0 {
+		return extractFallback(fileData)
 	}
 
-	// Try to extract text from each page
 	var allText strings.Builder
-	for i := 1; i <= ctx.PageCount; i++ {
-		// Get page content as text
-		content, err := extractPageText(ctx, i)
+	for i := 1; i <= numPages; i++ {
+		page := reader.Page(i)
+		if page.V.IsNull() {
+			continue
+		}
+		text, err := page.GetPlainText(nil)
 		if err != nil {
 			continue
 		}
-		allText.WriteString(content)
+		allText.WriteString(text)
 		allText.WriteString("\n")
 	}
 
-	result := allText.String()
-	result = cleanExtractedText(result)
-
+	result := cleanExtractedText(allText.String())
 	if strings.TrimSpace(result) == "" {
-		// Fall back to raw PDF text extraction
 		return extractFallback(fileData)
 	}
 
 	return result, nil
 }
 
-// extractPageText extracts text content from a single PDF page using pdfcpu context.
-func extractPageText(ctx *model.Context, pageNr int) (string, error) {
-	// Access the page dictionary
-	if pageNr < 1 || pageNr > ctx.PageCount {
-		return "", fmt.Errorf("invalid page number: %d", pageNr)
-	}
-
-	// Use a simple approach: extract all string content from the PDF
-	// This is a simplified extraction that works for most text-based resumes
-	return "", nil
-}
-
-// extractFallback attempts a basic text extraction from raw PDF bytes.
-// It looks for text between parentheses in BT/ET blocks, which is how
-// most PDF renderers store visible text.
+// extractFallback attempts text extraction from raw PDF bytes or BT/ET blocks.
 func extractFallback(fileData []byte) (string, error) {
 	content := string(fileData)
 
@@ -91,6 +72,26 @@ func extractFallback(fileData []byte) (string, error) {
 
 	result := strings.Join(textParts, " ")
 	result = cleanExtractedText(result)
+
+	// If BT/ET extraction produced no text, extract all printable words of length >= 4
+	if strings.TrimSpace(result) == "" {
+		var words []string
+		var word strings.Builder
+		for _, b := range fileData {
+			if (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == ' ' || b == '.' || b == ',' || b == '@' || b == '-' {
+				word.WriteByte(b)
+			} else {
+				if word.Len() >= 4 {
+					words = append(words, word.String())
+				}
+				word.Reset()
+			}
+		}
+		if word.Len() >= 4 {
+			words = append(words, word.String())
+		}
+		result = cleanExtractedText(strings.Join(words, " "))
+	}
 
 	if strings.TrimSpace(result) == "" {
 		return "", fmt.Errorf("could not extract text from PDF — the file may be image-based or scanned")
