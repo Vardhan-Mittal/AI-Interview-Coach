@@ -261,7 +261,7 @@ func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt st
 
 	var resp openai.ChatCompletionResponse
 	var err error
-	maxTokens := 2048
+	maxTokens := 8192
 	for _, modelName := range modelsToTry {
 		resp, err = c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 			Model: modelName,
@@ -284,7 +284,7 @@ func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt st
 		errStr := strings.ToLower(err.Error())
 		if strings.Contains(errStr, "413") || strings.Contains(errStr, "too large") || strings.Contains(errStr, "tpm") || strings.Contains(errStr, "tokens per minute") {
 			c.logger.Warn("AI model hit TPM limit or request too large, reducing max tokens and trying next model...", "failed_model", modelName, "error", err)
-			maxTokens = 1200
+			maxTokens = 4096
 			continue
 		}
 		if strings.Contains(errStr, "429") || strings.Contains(errStr, "rate limit") || strings.Contains(errStr, "quota") || strings.Contains(errStr, "exceeded") || strings.Contains(errStr, "too many requests") {
@@ -309,7 +309,17 @@ func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt st
 		content = strings.TrimPrefix(content, "```")
 		content = strings.TrimSuffix(content, "```")
 	}
-	return strings.TrimSpace(content), nil
+	content = strings.TrimSpace(content)
+	if idx := strings.Index(content, "{"); idx != -1 {
+		if lastIdx := strings.LastIndex(content, "}"); lastIdx != -1 && lastIdx > idx {
+			content = content[idx : lastIdx+1]
+		}
+	} else if idx := strings.Index(content, "["); idx != -1 {
+		if lastIdx := strings.LastIndex(content, "]"); lastIdx != -1 && lastIdx > idx {
+			content = content[idx : lastIdx+1]
+		}
+	}
+	return content, nil
 }
 
 // calculateRating returns a human-readable rating based on the overall score.
