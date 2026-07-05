@@ -1,8 +1,16 @@
 # 🎯 AI Interview Coach
 
+[![Live Demo on Vercel](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com) [![Backend API Health](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://resumenichod.onrender.com/api/health) [![Powered by Gemini](https://img.shields.io/badge/Powered%20By-Google%20Gemini%202.5-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
+
 > Upload Resume → AI analyzes it → Generates personalized interview → Conducts adaptive interview → Scores performance → Gives improvement roadmap
 
 An AI-powered interview preparation platform that provides personalized mock interviews based on your resume, with adaptive difficulty, topic-wise scoring, and actionable improvement roadmaps.
+
+## 🌐 Live Demo & API Endpoints
+
+- **🚀 Live Frontend (Vercel):** [https://your-project-name.vercel.app](https://vercel.com) *(Update with your deployed Vercel domain)*
+- **⚡ Live Backend API (Render):** [https://resumenichod.onrender.com/api/health](https://resumenichod.onrender.com/api/health)
+- **🧠 AI Engine:** Version `2.4.0 (gemini 503-auto-failover engine)`
 
 ## ✨ Features
 
