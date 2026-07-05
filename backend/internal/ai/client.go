@@ -176,6 +176,48 @@ func (c *Client) GenerateReport(ctx context.Context, session *models.InterviewSe
 	return &report, nil
 }
 
+// RoastResume generates a humorous roast and serious critique of the resume.
+func (c *Client) RoastResume(ctx context.Context, resume *models.ParsedResume, persona string) (*models.RoastResponse, error) {
+	resumeJSON, err := json.MarshalIndent(resume, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal resume: %w", err)
+	}
+
+	prompt := buildRoastPrompt(string(resumeJSON), persona)
+	respText, err := c.chatCompletion(ctx, prompt, "You are a tech recruiter conducting a humorous but helpful resume roast. Respond only with JSON.")
+	if err != nil {
+		return nil, fmt.Errorf("AI roast failed: %w", err)
+	}
+
+	var roast models.RoastResponse
+	if err := json.Unmarshal([]byte(respText), &roast); err != nil {
+		return nil, fmt.Errorf("failed to parse AI roast JSON: %w", err)
+	}
+
+	return &roast, nil
+}
+
+// MatchJob analyzes compatibility between a resume and target job description.
+func (c *Client) MatchJob(ctx context.Context, req *models.JobMatchRequest) (*models.JobMatchResponse, error) {
+	resumeJSON, err := json.MarshalIndent(req.Resume, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal resume: %w", err)
+	}
+
+	prompt := buildJobMatchPrompt(string(resumeJSON), req.JobDescription, req.TargetRole, req.TargetCompany)
+	respText, err := c.chatCompletion(ctx, prompt, "You are an expert technical hiring manager analyzing job compatibility. Respond only with JSON.")
+	if err != nil {
+		return nil, fmt.Errorf("AI job matching failed: %w", err)
+	}
+
+	var match models.JobMatchResponse
+	if err := json.Unmarshal([]byte(respText), &match); err != nil {
+		return nil, fmt.Errorf("failed to parse AI job match JSON: %w", err)
+	}
+
+	return &match, nil
+}
+
 // chatCompletion makes a chat completion request to OpenAI with JSON mode.
 func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt string) (string, error) {
 	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{

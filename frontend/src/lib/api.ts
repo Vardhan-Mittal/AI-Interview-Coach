@@ -5,6 +5,9 @@ import type {
   ResumeAnalysis,
   InterviewStartResponse,
   AnswerSubmitResponse,
+  RoastResponse,
+  JobMatchRequest,
+  JobMatchResponse,
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -48,6 +51,28 @@ export async function analyzeResume(resume: ParsedResume): Promise<ResumeAnalyze
   });
 
   return handleResponse<ResumeAnalyzeResponse>(response);
+}
+
+export async function roastResume(resume: ParsedResume, persona: string): Promise<RoastResponse> {
+  const response = await fetch(`${API_BASE}/api/resume/roast`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ resume, persona }),
+  });
+
+  return handleResponse<RoastResponse>(response);
+}
+
+// ===== Job Match API =====
+
+export async function matchJob(req: JobMatchRequest): Promise<JobMatchResponse> {
+  const response = await fetch(`${API_BASE}/api/job/match`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+
+  return handleResponse<JobMatchResponse>(response);
 }
 
 // ===== Interview API =====

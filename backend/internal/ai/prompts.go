@@ -301,3 +301,106 @@ Rules:
 - Recommendations should be specific and actionable
 - Be encouraging but honest`, sessionJSON)
 }
+
+// buildRoastPrompt creates a prompt for humorously roasting a resume using a specific persona.
+func buildRoastPrompt(resumeJSON string, persona string) string {
+	personaDesc := "Gordon Ramsay of Tech Interviewers — ruthless, culinary metaphors, shouts at raw/undercooked skills, demands Michelin-star engineering quality."
+	switch persona {
+	case "vc":
+		personaDesc = "Silicon Valley VC / Tech Twitter Influencer — obsessed with AI buzzwords, 10x engineers, ARR, disruption, thinks anything without Rust or LLMs is legacy."
+	case "faang":
+		personaDesc = "Strict FAANG Principal Staff Engineer — nitpicky about complexity, scalability, system design, rejects vague metrics, demands exact numbers and architectural depth."
+	}
+
+	return fmt.Sprintf(`You are acting as: %s
+
+Here is the candidate's resume in JSON:
+---
+%s
+---
+
+Your task is to conduct a hilarious, savage, yet ultimately educational "Resume Roast". Roast their buzzwords, formatting, weak metrics, and generic tech stack. But also provide a serious, high-value "Redemption Plan" so they can actually improve.
+
+Return ONLY a valid JSON object matching exactly this structure:
+{
+  "persona": "%s",
+  "overall_roast": "A hilarious, 2-3 paragraph brutal opening monologue roasting their resume in character.",
+  "red_flags": [
+    "Hilarious red flag 1 (e.g., 'Claiming 5 years of experience in Next.js 15')",
+    "Hilarious red flag 2"
+  ],
+  "buzzword_bingo": [
+    "Passionate",
+    "Rockstar",
+    "Synergized"
+  ],
+  "rating_score": 35,
+  "redemption_plan": [
+    "Serious, actionable advice 1 on how to fix their bullets with numbers",
+    "Serious advice 2 on removing fluff and highlighting real projects"
+  ]
+}
+
+Rules:
+- Be funny, witty, and entertaining, but never hateful or discriminatory.
+- In buzzword_bingo, list actual overused or vague words found in their summary/bullets.
+- rating_score should be a low/funny 'survival probability in a real tech interview' (10 to 60).
+- redemption_plan must contain genuinely useful, top-tier engineering career advice.`, personaDesc, resumeJSON, persona)
+}
+
+// buildJobMatchPrompt creates a prompt for analyzing compatibility between a resume and a target job description.
+func buildJobMatchPrompt(resumeJSON string, jobDescription string, targetRole string, targetCompany string) string {
+	roleContext := targetRole
+	if targetCompany != "" {
+		roleContext = fmt.Sprintf("%s at %s", targetRole, targetCompany)
+	}
+	if roleContext == "" {
+		roleContext = "the target job description"
+	}
+
+	return fmt.Sprintf(`You are an expert SDE Technical Recruiter and Hiring Manager analyzing a candidate for %s.
+
+Candidate Resume (JSON):
+---
+%s
+---
+
+Target Job Description:
+---
+%s
+---
+
+Analyze the compatibility between the candidate's resume and the job description. Identify exact keyword matches, critical missing skills, and provide tailored bullet point rewrites that will dramatically increase their chances of getting an interview.
+
+Return ONLY a valid JSON object matching exactly this structure:
+{
+  "match_percentage": 78,
+  "matched_skills": ["Go", "React", "PostgreSQL", "REST APIs"],
+  "missing_keywords": ["Kubernetes", "AWS", "Kafka", "CI/CD pipelines"],
+  "strengths_for_job": [
+    "Strong full-stack foundation matching the core requirements",
+    "Proven experience building scalable REST/gRPC APIs"
+  ],
+  "gaps_for_job": [
+    "Lack of cloud deployment experience (AWS/GCP) mentioned in JD",
+    "No distributed messaging queue (Kafka/RabbitMQ) projects"
+  ],
+  "tailored_bullets": [
+    {
+      "original": "Built a backend server using Go and database",
+      "tailored": "Engineered high-concurrency RESTful APIs in Go (Gin) backed by PostgreSQL, reducing latency by 40%% to align with high-scale service requirements",
+      "reason": "Replaces generic description with action verbs and performance metrics directly relevant to backend roles"
+    }
+  ],
+  "interview_focus": [
+    "System design for high-throughput APIs",
+    "SQL indexing and query optimization",
+    "Go concurrency patterns (goroutines/channels)"
+  ]
+}
+
+Rules:
+- match_percentage should be realistic based on skill and experience overlap (0 to 100).
+- tailored_bullets should pick 3-4 actual concepts or lines from the candidate's resume and rewrite them to be punchy, quantified, and targeted to the JD.
+- interview_focus should list 3-5 specific technical topics they should study before interviewing for this specific role.`, roleContext, resumeJSON, jobDescription)
+}

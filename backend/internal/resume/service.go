@@ -26,3 +26,11 @@ func (s *Service) ParseFromText(ctx context.Context, rawText string) (*models.Pa
 func (s *Service) Analyze(ctx context.Context, resume *models.ParsedResume) (*models.ResumeAnalysis, error) {
 	return s.aiClient.AnalyzeResume(ctx, resume)
 }
+
+// Roast generates a humorous roast and serious critique of the resume.
+func (s *Service) Roast(ctx context.Context, resume *models.ParsedResume, persona string) (*models.RoastResponse, error) {
+	if persona == "" {
+		persona = "gordon" // default persona
+	}
+	return s.aiClient.RoastResume(ctx, resume, persona)
+}

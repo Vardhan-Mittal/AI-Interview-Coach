@@ -145,3 +145,39 @@ export interface AppState {
   sessionId: string | null;
   report: InterviewReport | null;
 }
+
+// ===== Roast Types =====
+
+export interface RoastResponse {
+  persona: string;
+  overall_roast: string;
+  red_flags: string[];
+  buzzword_bingo: string[];
+  rating_score: number;
+  redemption_plan: string[];
+}
+
+// ===== Job Match Types =====
+
+export interface JobMatchRequest {
+  resume: ParsedResume;
+  job_description: string;
+  target_role?: string;
+  target_company?: string;
+}
+
+export interface TailoredBullet {
+  original: string;
+  tailored: string;
+  reason: string;
+}
+
+export interface JobMatchResponse {
+  match_percentage: number;
+  matched_skills: string[];
+  missing_keywords: string[];
+  strengths_for_job: string[];
+  gaps_for_job: string[];
+  tailored_bullets: TailoredBullet[];
+  interview_focus: string[];
+}

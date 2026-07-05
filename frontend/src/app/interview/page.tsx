@@ -24,6 +24,65 @@ export default function InterviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [isComplete, setIsComplete] = useState(false);
 
+  // Speech recognition state
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        setSpeechSupported(false);
+      }
+    }
+  }, []);
+
+  const toggleSpeechRecognition = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Try Chrome or Edge!");
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          transcript += event.results[i][0].transcript + " ";
+        }
+      }
+      if (transcript) {
+        setOpenAnswer((prev) => prev + (prev && !prev.endsWith(" ") ? " " : "") + transcript);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
   useEffect(() => {
     const storedResume = sessionStorage.getItem("parsedResume");
     const storedAnalysis = sessionStorage.getItem("resumeAnalysis");
@@ -211,13 +270,45 @@ export default function InterviewPage() {
                     ))}
                   </div>
                 ) : (
-                  <textarea
-                    className="answer-textarea"
-                    placeholder="Type your answer here..."
-                    value={openAnswer}
-                    onChange={(e) => setOpenAnswer(e.target.value)}
-                    style={{ marginBottom: "24px" }}
-                  />
+                  <div style={{ position: "relative", marginBottom: "24px" }}>
+                    <textarea
+                      className="answer-textarea"
+                      placeholder="Type your answer here or click the microphone to speak aloud..."
+                      value={openAnswer}
+                      onChange={(e) => setOpenAnswer(e.target.value)}
+                      style={{ marginBottom: "0", minHeight: "160px", paddingBottom: "54px" }}
+                    />
+                    {speechSupported && (
+                      <div style={{ position: "absolute", bottom: "14px", right: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                        {isListening && (
+                          <span className="badge badge-error animate-pulse" style={{ fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f43f5e" }} /> Listening... Speak now
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={toggleSpeechRecognition}
+                          style={{
+                            padding: "8px 14px",
+                            borderRadius: "20px",
+                            background: isListening ? "#f43f5e" : "rgba(99, 102, 241, 0.2)",
+                            border: isListening ? "1px solid #f43f5e" : "1px solid var(--border-subtle)",
+                            color: "white",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            transition: "all 0.2s"
+                          }}
+                          title="Speak your answer"
+                        >
+                          <span>{isListening ? "⏹️ Stop Recording" : "🎙️ Speak Answer"}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>

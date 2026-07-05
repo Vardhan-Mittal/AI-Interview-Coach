@@ -9,6 +9,7 @@ import (
 	"github.com/ai-interview-coach/backend/internal/ai"
 	"github.com/ai-interview-coach/backend/internal/config"
 	"github.com/ai-interview-coach/backend/internal/interview"
+	"github.com/ai-interview-coach/backend/internal/job"
 	"github.com/ai-interview-coach/backend/internal/report"
 	"github.com/ai-interview-coach/backend/internal/resume"
 	"github.com/ai-interview-coach/backend/routes"
@@ -34,11 +35,13 @@ func main() {
 	resumeService := resume.NewService(aiClient)
 	interviewService := interview.NewService(aiClient)
 	reportService := report.NewService(aiClient, interviewService)
+	jobService := job.NewService(aiClient)
 
 	// Initialize handlers
 	resumeHandler := resume.NewHandler(resumeService)
 	interviewHandler := interview.NewHandler(interviewService)
 	reportHandler := report.NewHandler(reportService)
+	jobHandler := job.NewHandler(jobService)
 
 	// Setup router
 	router := routes.SetupRouter(
@@ -46,6 +49,7 @@ func main() {
 		resumeHandler,
 		interviewHandler,
 		reportHandler,
+		jobHandler,
 	)
 
 	// Start server

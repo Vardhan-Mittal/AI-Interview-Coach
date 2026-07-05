@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ai-interview-coach/backend/internal/interview"
+	"github.com/ai-interview-coach/backend/internal/job"
 	"github.com/ai-interview-coach/backend/internal/middleware"
 	"github.com/ai-interview-coach/backend/internal/report"
 	"github.com/ai-interview-coach/backend/internal/resume"
@@ -16,6 +17,7 @@ func SetupRouter(
 	resumeHandler *resume.Handler,
 	interviewHandler *interview.Handler,
 	reportHandler *report.Handler,
+	jobHandler *job.Handler,
 ) *gin.Engine {
 	router := gin.Default()
 
@@ -27,7 +29,7 @@ func SetupRouter(
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"service": "AI Interview Coach",
-			"version": "1.0.0",
+			"version": "1.1.0",
 		})
 	})
 
@@ -39,6 +41,13 @@ func SetupRouter(
 		{
 			resumeGroup.POST("/upload", resumeHandler.Upload)
 			resumeGroup.POST("/analyze", resumeHandler.Analyze)
+			resumeGroup.POST("/roast", resumeHandler.Roast)
+		}
+
+		// Job endpoints
+		jobGroup := api.Group("/job")
+		{
+			jobGroup.POST("/match", jobHandler.Match)
 		}
 
 		// Interview endpoints

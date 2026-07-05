@@ -129,3 +129,35 @@ func (h *Handler) Analyze(c *gin.Context) {
 		Analysis: *analysis,
 	})
 }
+
+// Roast evaluates a parsed resume with a humorous roast and redemption plan.
+// POST /api/resume/roast
+func (h *Handler) Roast(c *gin.Context) {
+	var req models.RoastRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body. Please provide a parsed resume.",
+		})
+		return
+	}
+
+	if req.Resume.Name == "" && len(req.Resume.Skills) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Resume data is empty. Please upload and parse a resume first.",
+		})
+		return
+	}
+
+	h.logger.Info("Roasting resume", "name", req.Resume.Name, "persona", req.Persona)
+
+	roast, err := h.service.Roast(c.Request.Context(), &req.Resume, req.Persona)
+	if err != nil {
+		h.logger.Error("Resume roast failed", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to roast resume. Please try again.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, roast)
+}
