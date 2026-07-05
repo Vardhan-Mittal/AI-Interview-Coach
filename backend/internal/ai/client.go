@@ -225,18 +225,49 @@ func (c *Client) MatchJob(ctx context.Context, req *models.JobMatchRequest) (*mo
 
 // chatCompletion makes a chat completion request to OpenAI with JSON mode.
 func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt string) (string, error) {
-	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: c.model,
-		Messages: []openai.ChatCompletionMessage{
-			{Role: openai.ChatMessageRoleSystem, Content: systemPrompt},
-			{Role: openai.ChatMessageRoleUser, Content: userPrompt},
-		},
-		ResponseFormat: &openai.ChatCompletionResponseFormat{
-			Type: openai.ChatCompletionResponseFormatTypeJSONObject,
-		},
-		Temperature: 0.7,
-		MaxTokens:   4096,
-	})
+	modelsToTry := []string{c.model}
+	if strings.Contains(strings.ToLower(c.model), "llama") || strings.Contains(strings.ToLower(c.model), "mixtral") || strings.Contains(strings.ToLower(c.model), "gemma") || strings.Contains(strings.ToLower(c.model), "versatile") || strings.Contains(strings.ToLower(c.model), "instant") {
+		for _, fallback := range []string{"llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it", "llama-3.3-70b-versatile"} {
+			if fallback != c.model {
+				modelsToTry = append(modelsToTry, fallback)
+			}
+		}
+	} else if strings.Contains(strings.ToLower(c.model), "gemini") {
+		for _, fallback := range []string{"gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b"} {
+			if fallback != c.model {
+				modelsToTry = append(modelsToTry, fallback)
+			}
+		}
+	}
+
+	var resp openai.ChatCompletionResponse
+	var err error
+	for _, modelName := range modelsToTry {
+		resp, err = c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+			Model: modelName,
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleSystem, Content: systemPrompt},
+				{Role: openai.ChatMessageRoleUser, Content: userPrompt},
+			},
+			ResponseFormat: &openai.ChatCompletionResponseFormat{
+				Type: openai.ChatCompletionResponseFormatTypeJSONObject,
+			},
+			Temperature: 0.7,
+			MaxTokens:   4096,
+		})
+		if err == nil {
+			if modelName != c.model {
+				c.logger.Info("Successfully succeeded using fallback AI model", "used_model", modelName)
+			}
+			break
+		}
+		errStr := strings.ToLower(err.Error())
+		if strings.Contains(errStr, "429") || strings.Contains(errStr, "rate limit") || strings.Contains(errStr, "quota") || strings.Contains(errStr, "exceeded") || strings.Contains(errStr, "too many requests") {
+			c.logger.Warn("AI model hit rate limit, trying next backup model...", "failed_model", modelName, "error", err)
+			continue
+		}
+		break
+	}
 	if err != nil {
 		return "", err
 	}

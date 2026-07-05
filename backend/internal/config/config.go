@@ -34,8 +34,8 @@ func Load() *Config {
 	if baseURL == "" {
 		if os.Getenv("GROQ_API_KEY") != "" || strings.HasPrefix(apiKey, "gsk_") || strings.Contains(strings.ToLower(model), "llama") || strings.Contains(strings.ToLower(model), "mixtral") {
 			baseURL = "https://api.groq.com/openai/v1"
-			if model == "" || strings.HasPrefix(model, "gpt") {
-				model = "llama-3.3-70b-versatile"
+			if model == "" || strings.HasPrefix(model, "gpt") || model == "llama-3.3-70b-versatile" {
+				model = "llama-3.1-8b-instant"
 			}
 		} else if os.Getenv("GEMINI_API_KEY") != "" || strings.HasPrefix(apiKey, "AIza") || strings.HasPrefix(apiKey, "AQ.") || strings.Contains(strings.ToLower(model), "gemini") {
 			baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
