@@ -181,6 +181,81 @@ export default function LoginPage() {
 
         <div
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            margin: "24px 0",
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              height: "1px",
+              background: "var(--border-subtle)",
+            }}
+          />
+          <span
+            style={{
+              fontSize: "12px",
+              color: "var(--text-muted)",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
+            or continue with
+          </span>
+          <div
+            style={{
+              flex: 1,
+              height: "1px",
+              background: "var(--border-subtle)",
+            }}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+          style={{
+            width: "100%",
+            padding: "13px",
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-md)",
+            color: "white",
+            fontSize: "14px",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path
+              fill="#EA4335"
+              d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.3 8.9 5 12 5z"
+            />
+            <path
+              fill="#4285F4"
+              d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.3 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.4C.6 9.4 0 10.9 0 12.5s.6 3.1 1.6 5.1l3.7-2.8z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.2L1.6 17.6C3.5 21.4 7.4 24 12 24z"
+            />
+          </svg>
+          Continue with Google
+        </button>
+
+        <div
+          style={{
             marginTop: "24px",
             textAlign: "center",
             fontSize: "14px",
