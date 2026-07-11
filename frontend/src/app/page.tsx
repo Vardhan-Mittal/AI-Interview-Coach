@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 const features = [
   {
@@ -65,6 +66,8 @@ const steps = [
 ];
 
 export default function LandingPage() {
+  const { data: session, status } = useSession();
+
   return (
     <div className="bg-grid min-h-screen">
       {/* Navigation */}
@@ -103,9 +106,57 @@ export default function LandingPage() {
               InterviewCoach AI
             </span>
           </div>
-          <Link href="/upload" className="btn-primary" style={{ padding: "10px 24px", fontSize: "14px" }}>
-            Get Started →
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {status === "authenticated" && session?.user ? (
+              <>
+                <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+                  Hello, <strong style={{ color: "white" }}>{session.user.name || session.user.email}</strong>
+                </span>
+                <button
+                  onClick={() => signOut()}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--border-subtle)",
+                    color: "var(--text-secondary)",
+                    padding: "8px 16px",
+                    borderRadius: "20px",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  style={{
+                    color: "var(--text-secondary)",
+                    textDecoration: "none",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  style={{
+                    color: "var(--accent-primary)",
+                    textDecoration: "none",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Register
+                </Link>
+              </>
+            )}
+            <Link href="/upload" className="btn-primary" style={{ padding: "10px 24px", fontSize: "14px" }}>
+              Get Started →
+            </Link>
+          </div>
         </div>
       </nav>
 
