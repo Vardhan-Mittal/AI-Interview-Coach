@@ -248,6 +248,99 @@ func (c *Client) MatchJob(ctx context.Context, req *models.JobMatchRequest) (*mo
 	return &match, nil
 }
 
+// EmbedText generates an embedding vector for a single text using the Gemini embedding model.
+func (c *Client) EmbedText(ctx context.Context, text string) ([]float64, error) {
+	resp, err := c.client.CreateEmbeddings(ctx, openai.EmbeddingRequest{
+		Input: []string{text},
+		Model: openai.EmbeddingModel("text-embedding-004"),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("embedding request failed: %w", err)
+	}
+	if len(resp.Data) == 0 {
+		return nil, fmt.Errorf("no embedding data returned")
+	}
+
+	// Convert float32 to float64
+	embedding := make([]float64, len(resp.Data[0].Embedding))
+	for i, v := range resp.Data[0].Embedding {
+		embedding[i] = float64(v)
+	}
+	return embedding, nil
+}
+
+// EmbedBatch generates embedding vectors for multiple texts in a single API call.
+func (c *Client) EmbedBatch(ctx context.Context, texts []string) ([][]float64, error) {
+	if len(texts) == 0 {
+		return nil, nil
+	}
+
+	c.logger.Info("Generating batch embeddings", "count", len(texts))
+
+	resp, err := c.client.CreateEmbeddings(ctx, openai.EmbeddingRequest{
+		Input: texts,
+		Model: openai.EmbeddingModel("text-embedding-004"),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("batch embedding request failed: %w", err)
+	}
+	if len(resp.Data) != len(texts) {
+		return nil, fmt.Errorf("expected %d embeddings, got %d", len(texts), len(resp.Data))
+	}
+
+	embeddings := make([][]float64, len(resp.Data))
+	for i, d := range resp.Data {
+		embedding := make([]float64, len(d.Embedding))
+		for j, v := range d.Embedding {
+			embedding[j] = float64(v)
+		}
+		embeddings[i] = embedding
+	}
+	return embeddings, nil
+}
+
+// ChatWithHistory sends a multi-turn conversation to the LLM and returns the response text.
+// Used by the RAG chatbot for contextual, conversational replies.
+func (c *Client) ChatWithHistory(ctx context.Context, systemPrompt string, messages []openai.ChatCompletionMessage) (string, error) {
+	allMessages := []openai.ChatCompletionMessage{
+		{Role: openai.ChatMessageRoleSystem, Content: systemPrompt},
+	}
+	allMessages = append(allMessages, messages...)
+
+	modelsToTry := []string{c.model}
+	if strings.Contains(strings.ToLower(c.model), "gemini") {
+		for _, fallback := range []string{"gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash", "gemini-3.1-flash-lite"} {
+			if fallback != c.model {
+				modelsToTry = append(modelsToTry, fallback)
+			}
+		}
+	}
+
+	var resp openai.ChatCompletionResponse
+	var err error
+	for _, modelName := range modelsToTry {
+		resp, err = c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+			Model:       modelName,
+			Messages:    allMessages,
+			Temperature: 0.7,
+			MaxTokens:   2048,
+		})
+		if err == nil {
+			break
+		}
+		c.logger.Warn("Chat model failed, trying fallback", "failed_model", modelName, "error", err)
+	}
+	if err != nil {
+		return "", fmt.Errorf("chat completion failed: %w", err)
+	}
+
+	if len(resp.Choices) == 0 {
+		return "", fmt.Errorf("no response choices returned from AI")
+	}
+
+	return strings.TrimSpace(resp.Choices[0].Message.Content), nil
+}
+
 // chatCompletion makes a chat completion request to OpenAI with JSON mode.
 func (c *Client) chatCompletion(ctx context.Context, userPrompt, systemPrompt string) (string, error) {
 	modelsToTry := []string{c.model}

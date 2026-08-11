@@ -181,3 +181,29 @@ export interface JobMatchResponse {
   tailored_bullets: TailoredBullet[];
   interview_focus: string[];
 }
+
+// ===== Chat Types =====
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatInitResponse {
+  session_id: string;
+  message: string;
+  chunk_count: number;
+}
+
+export interface ChatSource {
+  section: string;
+  title: string;
+  text: string;
+  score: number;
+}
+
+export interface ChatMessageResponse {
+  reply: string;
+  sources?: ChatSource[];
+}
+

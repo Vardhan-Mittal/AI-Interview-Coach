@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/ai-interview-coach/backend/internal/ai"
+	"github.com/ai-interview-coach/backend/internal/chatbot"
 	"github.com/ai-interview-coach/backend/internal/config"
 	"github.com/ai-interview-coach/backend/internal/db"
 	"github.com/ai-interview-coach/backend/internal/interview"
@@ -43,12 +44,14 @@ func main() {
 	interviewService := interview.NewService(aiClient, gormDB)
 	reportService := report.NewService(aiClient, interviewService, gormDB)
 	jobService := job.NewService(aiClient)
+	chatService := chatbot.NewService(aiClient)
 
 	// Initialize handlers
 	resumeHandler := resume.NewHandler(resumeService)
 	interviewHandler := interview.NewHandler(interviewService)
 	reportHandler := report.NewHandler(reportService)
 	jobHandler := job.NewHandler(jobService)
+	chatHandler := chatbot.NewHandler(chatService)
 
 	// Setup router
 	router := routes.SetupRouter(
@@ -57,6 +60,7 @@ func main() {
 		interviewHandler,
 		reportHandler,
 		jobHandler,
+		chatHandler,
 	)
 
 	// Start server
@@ -67,3 +71,4 @@ func main() {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
+

@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/ai-interview-coach/backend/internal/chatbot"
 	"github.com/ai-interview-coach/backend/internal/interview"
 	"github.com/ai-interview-coach/backend/internal/job"
 	"github.com/ai-interview-coach/backend/internal/middleware"
@@ -18,6 +19,7 @@ func SetupRouter(
 	interviewHandler *interview.Handler,
 	reportHandler *report.Handler,
 	jobHandler *job.Handler,
+	chatHandler *chatbot.Handler,
 ) *gin.Engine {
 	router := gin.Default()
 
@@ -29,7 +31,7 @@ func SetupRouter(
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"service": "AI Interview Coach",
-			"version": "2.4.0 (gemini 503-auto-failover engine)",
+			"version": "2.5.0 (gemini 503-auto-failover engine + RAG chatbot)",
 		})
 	})
 
@@ -63,7 +65,15 @@ func SetupRouter(
 		{
 			reportGroup.GET("/:sessionId", reportHandler.GetReport)
 		}
+
+		// Chat endpoints (RAG chatbot)
+		chatGroup := api.Group("/chat")
+		{
+			chatGroup.POST("/init", chatHandler.Init)
+			chatGroup.POST("/message", chatHandler.Message)
+		}
 	}
 
 	return router
 }
+
